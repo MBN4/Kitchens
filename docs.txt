@@ -1,0 +1,43 @@
+KITCHENS APP DOCUMENTATION
+==========================
+
+✅ STEP 1: PROJECT INITIALIZATION (Expo, Navigation, Folder Structure)
+✅ STEP 2: AUTHENTICATION & ROLE-BASED NAVIGATION (Zustand, Axios, Multi-role routing)
+✅ STEP 3: BACKEND SCHEMA DESIGN (Inforge.dev Collections & Fields)
+✅ STEP 4: SIGNUP & LOCATION INTEGRATION (Google Maps API, Location Picker UI)
+✅ STEP 5: ADMIN WORKFLOW (Chef Verification UI, Pending List Management)
+✅ STEP 6: CHEF MENU MANAGEMENT (Image Picker, Add Food Item UI, CRUD Logic)
+✅ STEP 7: CUSTOMER HOME SCREEN (Chef Listings, Categories, Search UI)
+✅ STEP 8: CHEF PROFILE & CART SYSTEM (Menu display, Add to Cart logic, Cart Store)
+✅ STEP 9: CHECKOUT & ORDER CREATION (Order Service, Payment selection, Total logic)
+✅ STEP 10: CHEF ORDER MANAGEMENT (Accept/Reject, Status flow, Live Refresh)
+✅ STEP 11: ORDER HISTORY & TRACKING (Customer History, Visual Status Timeline)
+✅ STEP 12: USER PROFILE & TAB NAVIGATION (Unified Profile, Bottom Tab Refactor)
+✅ STEP 13: FINAL POLISH & NOTIFICATIONS (Push token registration, Env setup)
+✅ STEP 14: DATABASE SCHEMA IMPLEMENTATION (Created tables: users, chefs, food_items, orders)
+✅ STEP 15: ENVIRONMENT VARIABLE CONFIGURATION (Moved API keys to .env)
+✅ STEP 16: BACKEND INTEGRATION (Linked client.js to InsForge REST endpoints)
+✅ STEP 17: TESTING PROTOCOL (Expo Go configuration, Babel dotenv setup)
+
+DELIVERABLES SUMMARY:
+1. Multi-role App: Customer, Chef, Admin access logic.
+2. Real-time Logic: Status-based order tracking.
+3. Geo-location: Google Maps integration on Signup.
+4. Backend-Ready: Connected to Inforge.dev endpoints.
+5. Notification-Ready: Expo-notifications logic implemented.
+
+DEPLOYMENT INSTRUCTIONS:
+- Ensure .env contains valid API_BASE_URL and API_KEY.
+- Replace GOOGLE_MAPS_API_KEY in .env.
+- Run `npx expo prebuild` to generate android/ios folders.
+- Use `eas build` for Store submissions.
+
+DATABASE STATUS:
+- [✅] Created 'users' table.
+- [✅] Created 'chefs' table.
+- [✅] Created 'food_items' table.
+- [✅] Created 'orders' table.
+
+NEXT STEP:
+- Perform end-to-end test (Signup -> Add Food -> Order -> Complete).
+- Build the production APK for final delivery.
