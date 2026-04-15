@@ -1,12 +1,22 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, ScrollView, StatusBar, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, ScrollView, StatusBar, Alert, ActivityIndicator } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { COLORS, SIZES } from '../../constants/theme';
-import { Camera, ChevronLeft, Tag, DollarSign, AlignLeft } from 'lucide-react-native';
+import { COLORS } from '../../constants/theme';
+import { Camera, ChevronLeft, Tag, DollarSign, AlignLeft, Clock } from 'lucide-react-native';
+import client from '../../api/client';
+import useAuthStore from '../../store/useAuthStore';
 
 export default function AddFoodItem({ navigation }) {
+  const { user } = useAuthStore();
   const [image, setImage] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    category: '',
+    price: '',
+    description: '',
+    preparationTime: ''
+  });
 
   const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -20,10 +30,50 @@ export default function AddFoodItem({ navigation }) {
     }
   };
 
+  const handlePublish = async () => {
+    if (!formData.name || !formData.price || !formData.category || !formData.description || !formData.preparationTime || !image) {
+      Alert.alert("Missing Fields", "Please fill in all details and select an image");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const data = new FormData();
+      data.append('chef', user._id);
+      data.append('name', formData.name);
+      data.append('category', formData.category);
+      data.append('price', formData.price);
+      data.append('description', formData.description);
+      data.append('preparationTime', formData.preparationTime);
+      
+      const uriParts = image.split('.');
+      const fileType = uriParts[uriParts.length - 1];
+      
+      data.append('image', {
+        uri: image,
+        name: `photo.${fileType}`,
+        type: `image/${fileType}`,
+      });
+
+      await client.post('/api/chefs/food', data, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      Alert.alert("Success", "Dish added to your menu!", [
+        { text: "OK", onPress: () => navigation.goBack() }
+      ]);
+    } catch (error) {
+      Alert.alert("Error", error.response?.data?.message || "Could not save dish");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" />
-      
       <View style={styles.darkHeader}>
         <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
           <ChevronLeft color={COLORS.white} size={28} />
@@ -35,13 +85,9 @@ export default function AddFoodItem({ navigation }) {
       <View style={styles.whiteSheet}>
         <ScrollView showsVerticalScrollIndicator={false}>
           <TouchableOpacity style={styles.imageUpload} onPress={pickImage}>
-            {image ? (
-              <Image source={{ uri: image }} style={styles.previewImage} />
-            ) : (
+            {image ? <Image source={{ uri: image }} style={styles.previewImage} /> : (
               <View style={styles.uploadPlaceholder}>
-                <View style={styles.cameraCircle}>
-                  <Camera color={COLORS.primary} size={30} />
-                </View>
+                <View style={styles.cameraCircle}><Camera color={COLORS.primary} size={30} /></View>
                 <Text style={styles.uploadText}>Upload Food Photo</Text>
               </View>
             )}
@@ -49,43 +95,39 @@ export default function AddFoodItem({ navigation }) {
 
           <View style={styles.inputGroup}>
             <View style={styles.inputBox}>
-              <UtensilsIcon color={COLORS.primary} size={20} />
-              <TextInput style={styles.input} placeholder="Dish Name" placeholderTextColor={COLORS.gray} />
+               <Tag color={COLORS.primary} size={20} />
+              <TextInput style={styles.input} placeholder="Dish Name" placeholderTextColor={COLORS.gray} value={formData.name} onChangeText={(txt) => setFormData({...formData, name: txt})} />
             </View>
 
             <View style={styles.inputBox}>
-              <Tag color={COLORS.primary} size={20} />
-              <TextInput style={styles.input} placeholder="Category (e.g. Dessert, Italian)" placeholderTextColor={COLORS.gray} />
+               <Tag color={COLORS.primary} size={20} />
+              <TextInput style={styles.input} placeholder="Category" placeholderTextColor={COLORS.gray} value={formData.category} onChangeText={(txt) => setFormData({...formData, category: txt})} />
+            </View>
+
+            <View style={styles.inputBox}>
+              <Clock color={COLORS.primary} size={20} />
+              <TextInput style={styles.input} placeholder="Prep Time (e.g. 20-30 mins)" placeholderTextColor={COLORS.gray} value={formData.preparationTime} onChangeText={(txt) => setFormData({...formData, preparationTime: txt})} />
             </View>
 
             <View style={styles.inputBox}>
               <DollarSign color={COLORS.primary} size={20} />
-              <TextInput style={styles.input} placeholder="Price" keyboardType="numeric" placeholderTextColor={COLORS.gray} />
+              <TextInput style={styles.input} placeholder="Price" keyboardType="numeric" placeholderTextColor={COLORS.gray} value={formData.price} onChangeText={(txt) => setFormData({...formData, price: txt})} />
             </View>
 
             <View style={[styles.inputBox, { height: 120, alignItems: 'flex-start', paddingTop: 15 }]}>
               <AlignLeft color={COLORS.primary} size={20} />
-              <TextInput 
-                style={[styles.input, { textAlignVertical: 'top' }]} 
-                placeholder="Description" 
-                multiline 
-                placeholderTextColor={COLORS.gray} 
-              />
+              <TextInput style={[styles.input, { textAlignVertical: 'top' }]} placeholder="Description" multiline placeholderTextColor={COLORS.gray} value={formData.description} onChangeText={(txt) => setFormData({...formData, description: txt})} />
             </View>
           </View>
 
-          <TouchableOpacity style={styles.submitBtn}>
-            <Text style={styles.submitBtnText}>Publish Dish</Text>
+          <TouchableOpacity style={styles.submitBtn} onPress={handlePublish} disabled={loading}>
+            {loading ? <ActivityIndicator color={COLORS.primary} /> : <Text style={styles.submitBtnText}>Publish Dish</Text>}
           </TouchableOpacity>
         </ScrollView>
       </View>
     </View>
   );
 }
-
-const UtensilsIcon = ({ color, size }) => (
-  <View style={{ width: size, height: size, backgroundColor: color + '20', borderRadius: 5, justifyContent: 'center', alignItems: 'center' }} />
-);
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.primary },

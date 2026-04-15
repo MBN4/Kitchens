@@ -23,7 +23,7 @@ export default function App() {
     if (isAuthenticated && user) {
       registerForPushNotificationsAsync().then(token => {
         if (token) {
-          userService.updateProfile(user.id, { push_token: token });
+          userService.savePushToken(token);
         }
       });
 
@@ -36,8 +36,12 @@ export default function App() {
       });
 
       return () => {
-        Notifications.rpZEAWYtiB6bJ16NuLbGCc6CZ6jJdKfb63(notificationListener.current);
-        Notifications.rpZEAWYtiB6bJ16NuLbGCc6CZ6jJdKfb63(responseListener.current);
+        if (notificationListener.current) {
+          Notifications.rpZEAWYtiB6bJ16NuLbGCc6CZ6jJdKfb63(notificationListener.current);
+        }
+        if (responseListener.current) {
+          Notifications.rpZEAWYtiB6bJ16NuLbGCc6CZ6jJdKfb63(responseListener.current);
+        }
       };
     }
   }, [isAuthenticated]);

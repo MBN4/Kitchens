@@ -1,43 +1,118 @@
-KITCHENS APP DOCUMENTATION
-==========================
+KITCHENS APP DOCUMENTATION - MASTER PROGRESS TRACKER
+====================================================
 
-✅ STEP 1: PROJECT INITIALIZATION (Expo, Navigation, Folder Structure)
-✅ STEP 2: AUTHENTICATION & ROLE-BASED NAVIGATION (Zustand, Axios, Multi-role routing)
-✅ STEP 3: BACKEND SCHEMA DESIGN (Inforge.dev Collections & Fields)
-✅ STEP 4: SIGNUP & LOCATION INTEGRATION (Google Maps API, Location Picker UI)
-✅ STEP 5: ADMIN WORKFLOW (Chef Verification UI, Pending List Management)
-✅ STEP 6: CHEF MENU MANAGEMENT (Image Picker, Add Food Item UI, CRUD Logic)
-✅ STEP 7: CUSTOMER HOME SCREEN (Chef Listings, Categories, Search UI)
-✅ STEP 8: CHEF PROFILE & CART SYSTEM (Menu display, Add to Cart logic, Cart Store)
-✅ STEP 9: CHECKOUT & ORDER CREATION (Order Service, Payment selection, Total logic)
-✅ STEP 10: CHEF ORDER MANAGEMENT (Accept/Reject, Status flow, Live Refresh)
-✅ STEP 11: ORDER HISTORY & TRACKING (Customer History, Visual Status Timeline)
-✅ STEP 12: USER PROFILE & TAB NAVIGATION (Unified Profile, Bottom Tab Refactor)
-✅ STEP 13: FINAL POLISH & NOTIFICATIONS (Push token registration, Env setup)
-✅ STEP 14: DATABASE SCHEMA IMPLEMENTATION (Created tables: users, chefs, food_items, orders)
-✅ STEP 15: ENVIRONMENT VARIABLE CONFIGURATION (Moved API keys to .env)
-✅ STEP 16: BACKEND INTEGRATION (Linked client.js to InsForge REST endpoints)
-✅ STEP 17: TESTING PROTOCOL (Expo Go configuration, Babel dotenv setup)
+PROJECT OVERVIEW:
+- App Name: Kitchens
+- Stack: React Native (Frontend) + Node.js/Express (Backend) + MongoDB (Database)
+- Theme: Premium Emerald Green (#00473E) & Gold (#F2BB05)
 
-DELIVERABLES SUMMARY:
-1. Multi-role App: Customer, Chef, Admin access logic.
-2. Real-time Logic: Status-based order tracking.
-3. Geo-location: Google Maps integration on Signup.
-4. Backend-Ready: Connected to Inforge.dev endpoints.
-5. Notification-Ready: Expo-notifications logic implemented.
+✅ STEP 1-5: INITIALIZATION
+----------------------------
+- [✅] Project created via Expo SDK.
+- [✅] Folder structure established (api, components, constants, navigation, screens, store).
+- [✅] Navigation Stacks configured (Auth, Customer, Chef, Admin).
+- [✅] Initial Branding defined in theme.js.
 
-DEPLOYMENT INSTRUCTIONS:
-- Ensure .env contains valid API_BASE_URL and API_KEY.
-- Replace GOOGLE_MAPS_API_KEY in .env.
-- Run `npx expo prebuild` to generate android/ios folders.
-- Use `eas build` for Store submissions.
+✅ STEP 6-15: CORE LOGIC & INSFORGE ERA (LEGACY)
+-----------------------------------------------
+- [✅] Defined initial database schemas for Users and Chefs.
+- [✅] Integrated Google Maps API for location capture.
+- [✅] Created reusable UI components (Buttons, Inputs, Cards).
+- [✅] Setup basic Zustand state for Auth and Cart management.
 
-DATABASE STATUS:
-- [✅] Created 'users' table.
-- [✅] Created 'chefs' table.
-- [✅] Created 'food_items' table.
-- [✅] Created 'orders' table.
+✅ STEP 16-25: PREMIUM UI REDESIGN
+----------------------------------
+- [✅] Implemented "Forest Green & Gold" palette.
+- [✅] Created High-Radius (25px-40px) "Floating Sheet" UI for Android/iOS.
+- [✅] Redesigned Login & Signup screens with dark forest headers.
+- [✅] Implemented animated Dish Cards on Home Screen.
+- [✅] Created Chef Earnings Dashboard with custom SVG bar charts.
+- [✅] Integrated Lucide-React-Native for premium iconography.
 
-NEXT STEP:
-- Perform end-to-end test (Signup -> Add Food -> Order -> Complete).
-- Build the production APK for final delivery.
+✅ STEP 26-30: BACKEND MIGRATION (CUSTOM NODE.JS + MONGODB)
+-----------------------------------------------------------
+- [✅] Migrated from No-code to Custom Node.js/Express server.
+- [✅] Configured MongoDB Atlas (Cloud) and MongoDB Compass (Visual Tool).
+- [✅] Setup .env environment variables for Backend and Frontend.
+- [✅] Implemented DB Connection logic in config/db.js.
+
+✅ STEP 31-36: BACKEND API ARCHITECTURE
+---------------------------------------
+- [✅] Created Mongoose Models: User, Chef, FoodItem, Order.
+- [✅] Implemented AuthRoutes & Controllers (Signup/Login).
+- [✅] Implemented ChefRoutes & Controllers (Kitchen Listing/Menu).
+- [✅] Implemented OrderRoutes & Controllers (Creation/Status Tracking).
+- [✅] Implemented AdminRoutes & Controllers (Chef Verification).
+
+✅ STEP 37-41: SECURITY, VALIDATION & ANDROID FIXES
+---------------------------------------------------
+- [✅] Implemented BcryptJS Password Hashing.
+- [✅] Implemented JWT (JSON Web Token) Session management.
+- [✅] Added Regex validation for Email and Phone (11 digits required).
+- [✅] Fixed Android Safe Area issues (Notch/Status Bar overlap).
+- [✅] Fixed Android 3-Button Navigation overlap for floating Cart bars.
+- [✅] Added Backend logging for debugging API requests.
+
+✅ STEP 42: LIVE DATABASE FETCHING INTEGRATION
+----------------------------------------------
+- [✅] Connected HomeScreen to MongoDB: Fetches 'active' chefs only.
+- [✅] Connected ChefProfile to MongoDB: Fetches kitchen details and menu dynamically.
+- [✅] Implemented Loading states (ActivityIndicator) for data fetching.
+- [✅] Synced Cart system with real MongoDB ObjectIDs (_id).
+
+✅ STEP 43: CHEF MENU MANAGEMENT
+---------------------------------------
+- [✅] Implement "Add Dish" logic with Preparation Time.
+- [✅] Implement "Delete Dish" logic for Chefs.
+- [✅] Implement "Live Availability" toggle for inventory management.
+- [✅] Created MenuManagement screen for chef CRUD operations.
+
+✅ STEP 44: CLOUDINARY IMAGE UPLOAD
+------------------------------------
+- [✅] Configured Multer middleware for file parsing.
+- [✅] Connected Backend to Cloudinary SDK for storage.
+- [✅] Updated Food Routes to handle multipart/form-data.
+- [✅] Updated AddFoodItem screen to upload real images via FormData.
+
+✅ STEP 45: ORDER PLACEMENT SYSTEM
+-----------------------------------
+- [✅] Aligned Frontend Checkout data with Backend Order Schema.
+- [✅] Fixed OrderService API paths (/api/orders).
+- [✅] Implemented Checkout logic: POST order to MongoDB and clear cart.
+- [✅] Created OrderSuccess screen for user feedback.
+
+✅ STEP 46: REAL-TIME ORDER TRACKING
+-------------------------------------
+- [✅] Built Chef Orders screen connected to MongoDB live data.
+- [✅] Implemented Status cycling logic (Pending -> Preparing -> Ready -> Delivered).
+- [✅] Connected Customer Tracking screen with automatic 5s polling for "real-time" feel.
+- [✅] Fixed ID references across Order history and tracking screens
+
+✅ STEP 47: USER PROFILE & ADDRESSES
+-------------------------------------
+- [✅] Created Auth Middleware for protected profile updates.
+- [✅] Updated User Schema to support an array of "Saved Addresses".
+- [✅] Implemented Backend CRUD for Profiles and Addresses.
+- [✅] Built Edit Profile Screen UI with dynamic state.
+- [✅] Built Address Management Screen with Labeling (Home/Office).
+
+🔄 STEP 48: ADMIN CONTROL PANEL (IN PROGRESS)
+--------------------------------
+- [✅] Implemented Backend routes and controller for Chef verification.
+- [✅] Created Admin Dashboard UI with pending request listing.
+- [✅] Connected Admin API Service to Frontend.
+- [ ] Implement System-wide stats (Total Revenue, Active Users).
+
+✅ STEP 49: PUSH NOTIFICATIONS
+-------------------------------
+- [✅] Integrated Expo Notifications for Order status alerts.
+- [✅] Created Backend Push Utility to communicate with Expo Servers.
+- [✅] Implemented automatic notification triggers in Order Controller.
+- [✅] Fixed App.js notification listeners and subscription cleanup.
+- [✅] Connected push_token storage to User profile updates.
+
+✅ STEP 50: PRODUCTION READINESS
+-----------------------------
+- [✅] Production DB connection logic.
+- [✅] Controller-based Route optimization.
+- [✅] EAS Build configuration for APK generation.

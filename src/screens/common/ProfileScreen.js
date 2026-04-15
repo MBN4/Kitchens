@@ -1,6 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Alert } from 'react-native';
-import { User, MapPin, CreditCard, LogOut, ChevronRight, Store, BarChart3 } from 'lucide-react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import { User, MapPin, CreditCard, LogOut, ChevronRight, Store, BarChart3, Settings } from 'lucide-react-native';
 import { COLORS } from '../../constants/theme';
 import useAuthStore from '../../store/useAuthStore';
 
@@ -14,7 +14,7 @@ export default function ProfileScreen({ navigation }) {
     ]);
   };
 
-  const MenuItem = ({ icon: Icon, title, subtitle, onPress, color = COLORS.text }) => (
+  const MenuItem = ({ icon: Icon, title, subtitle, onPress, color = COLORS.primary }) => (
     <TouchableOpacity style={styles.menuItem} onPress={onPress}>
       <View style={[styles.iconBox, { backgroundColor: color + '10' }]}>
         <Icon color={color} size={22} />
@@ -27,8 +27,10 @@ export default function ProfileScreen({ navigation }) {
     </TouchableOpacity>
   );
 
+  if (!user) return null;
+
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <View style={styles.header}>
         <View style={styles.profileImgContainer}>
           <User size={40} color={COLORS.gray} />
@@ -36,39 +38,57 @@ export default function ProfileScreen({ navigation }) {
         <Text style={styles.userName}>{user?.name || "User Name"}</Text>
         <Text style={styles.userEmail}>{user?.email}</Text>
         <View style={styles.roleBadge}>
-          <Text style={styles.roleText}>{role.toUpperCase()}</Text>
+          <Text style={styles.roleText}>{role?.toUpperCase() || ""}</Text>
         </View>
       </View>
 
       <View style={styles.menuSection}>
         <Text style={styles.sectionLabel}>Account Settings</Text>
-        <MenuItem icon={User} title="Personal Information" subtitle="Name, Phone, Email" />
-        <MenuItem icon={MapPin} title="Saved Addresses" subtitle="Home, Office, etc." />
+        <MenuItem 
+          icon={User} 
+          title="Personal Information" 
+          subtitle="Name, Phone, Email" 
+          onPress={() => navigation.navigate('EditProfile')}
+        />
+        <MenuItem 
+          icon={MapPin} 
+          title="Saved Addresses" 
+          subtitle="Home, Office, etc." 
+          onPress={() => navigation.navigate('AddressManager')}
+        />
         
         {role === 'customer' && (
           <MenuItem 
             icon={Store} 
             title="Become a Home Chef" 
             subtitle="Start selling your homemade food" 
-            color={COLORS.secondary}
+            color="#F2BB05"
           />
         )}
 
         {role === 'chef' && (
           <>
             <Text style={styles.sectionLabel}>Chef Dashboard</Text>
-            <MenuItem icon={BarChart3} title="Earnings & Analytics" subtitle="View your sales history" />
-            <MenuItem icon={Store} title="Kitchen Settings" subtitle="Description, Opening hours" />
+            <MenuItem 
+              icon={BarChart3} 
+              title="Earnings & Analytics" 
+              subtitle="View your sales history" 
+            />
+            <MenuItem 
+              icon={Settings} 
+              title="Kitchen Settings" 
+              subtitle="Description, Opening hours" 
+            />
           </>
         )}
 
-        <Text style={styles.sectionLabel}>Support</Text>
+        <Text style={styles.sectionLabel}>System</Text>
         <MenuItem icon={CreditCard} title="Payment Methods" />
         <MenuItem 
           icon={LogOut} 
           title="Logout" 
           onPress={handleLogout} 
-          color={COLORS.primary} 
+          color="#e74c3c" 
         />
       </View>
       <View style={{ height: 100 }} />
@@ -78,16 +98,16 @@ export default function ProfileScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
-  header: { alignItems: 'center', paddingTop: 60, paddingBottom: 30, backgroundColor: '#F9F9F9' },
+  header: { alignItems: 'center', paddingTop: 60, paddingBottom: 30, backgroundColor: '#f8f9fa' },
   profileImgContainer: { width: 100, height: 100, borderRadius: 50, backgroundColor: '#eee', justifyContent: 'center', alignItems: 'center', marginBottom: 15 },
-  userName: { fontSize: 22, fontWeight: 'bold' },
+  userName: { fontSize: 22, fontWeight: 'bold', color: COLORS.primary },
   userEmail: { color: COLORS.gray, marginTop: 5 },
   roleBadge: { marginTop: 10, backgroundColor: COLORS.primary, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 20 },
   roleText: { color: 'white', fontSize: 10, fontWeight: 'bold' },
   menuSection: { padding: 20 },
-  sectionLabel: { fontSize: 14, fontWeight: 'bold', color: COLORS.gray, marginTop: 25, marginBottom: 15, textTransform: 'uppercase', letterSpacing: 1 },
+  sectionLabel: { fontSize: 13, fontWeight: 'bold', color: COLORS.gray, marginTop: 25, marginBottom: 15, textTransform: 'uppercase', letterSpacing: 1 },
   menuItem: { flexDirection: 'row', alignItems: 'center', marginBottom: 20 },
   iconBox: { width: 45, height: 45, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
-  menuTitle: { fontSize: 16, fontWeight: '600' },
+  menuTitle: { fontSize: 16, fontWeight: '600', color: COLORS.primary },
   menuSubtitle: { fontSize: 12, color: COLORS.gray, marginTop: 2 }
 });

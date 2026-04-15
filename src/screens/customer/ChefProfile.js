@@ -1,94 +1,102 @@
-import React from 'react';
-import { View, Text, Image, FlatList, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, Image, FlatList, StyleSheet, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { ChevronLeft, Star, Clock, Plus, Minus } from 'lucide-react-native';
 import { COLORS } from '../../constants/theme';
 import useCartStore from '../../store/useCartStore';
+import client from '../../api/client';
 
 export default function ChefProfile({ route, navigation }) {
-  const { chefId } = route.params;
+  const { chef } = route.params;
   const { addToCart, removeFromCart, cartItems, getTotalPrice } = useCartStore();
+  const [menuItems, setMenuItems] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const chefData = {
-    id: chefId,
-    kitchen_name: "Mom's Biryani",
-    banner_image: 'https://images.unsplash.com/photo-1563379091339-03b21bc4a6f8',
-    rating: '4.9',
-    time: '30-40 min',
-    description: 'Authentic homemade spices and organic ingredients.'
+  useEffect(() => {
+    fetchMenu();
+  }, []);
+
+  const fetchMenu = async () => {
+    try {
+      const response = await client.get(`/api/chefs/menu/${chef._id}`);
+      setMenuItems(response.data);
+    } catch (error) {
+      Alert.alert("Error", "Could not fetch menu items");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const menuItems = [
-    { id: '101', name: 'Chicken Biryani', price: 12, description: 'Serves 1, spicy with raita', image: 'https://images.unsplash.com/photo-1563379091339-03b21bc4a6f8' },
-    { id: '102', name: 'Shami Kabab', price: 5, description: '2 pieces with mint chutney', image: 'https://images.unsplash.com/photo-1601050638917-3f309a4065ef' }
-  ];
-
   const handleAdd = (item) => {
-    const success = addToCart(item, chefId);
+    const success = addToCart(item, chef._id);
     if (!success) {
       Alert.alert(
         "Replace cart?",
         "You can only order from one chef at a time. Clear cart and add this instead?",
         [
           { text: "Cancel", style: "cancel" },
-          { text: "Clear Cart", onPress: () => { useCartStore.getState().clearCart(); addToCart(item, chefId); } }
+          { text: "Clear Cart", onPress: () => { useCartStore.getState().clearCart(); addToCart(item, chef._id); } }
         ]
       );
     }
   };
 
   const getItemQty = (id) => {
-    const item = cartItems.find(i => i.id === id);
+    const item = cartItems.find(i => i.id === id || i._id === id);
     return item ? item.quantity : 0;
   };
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Image source={{ uri: chefData.banner_image }} style={styles.banner} />
+        <Image source={{ uri: chef.bannerImage || 'https://images.unsplash.com/photo-1563379091339-03b21bc4a6f8' }} style={styles.banner} />
         <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
           <ChevronLeft color="black" />
         </TouchableOpacity>
       </View>
 
       <View style={styles.infoSection}>
-        <Text style={styles.title}>{chefData.kitchen_name}</Text>
-        <Text style={styles.desc}>{chefData.description}</Text>
+        <Text style={styles.title}>{chef.kitchenName}</Text>
+        <Text style={styles.desc}>{chef.description || 'No description available'}</Text>
         <View style={styles.meta}>
           <Star size={16} color={COLORS.accent} fill={COLORS.accent} />
-          <Text style={styles.metaText}>{chefData.rating}</Text>
+          <Text style={styles.metaText}>{chef.rating || '5.0'}</Text>
           <Clock size={16} color={COLORS.gray} style={{ marginLeft: 15 }} />
-          <Text style={styles.metaText}>{chefData.time}</Text>
+          <Text style={styles.metaText}>30-40 min</Text>
         </View>
       </View>
 
-      <FlatList
-        data={menuItems}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={{ padding: 20 }}
-        renderItem={({ item }) => (
-          <View style={styles.foodCard}>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.foodName}>{item.name}</Text>
-              <Text style={styles.foodPrice}>${item.price}</Text>
-              <Text style={styles.foodDesc}>{item.description}</Text>
+      {loading ? (
+        <ActivityIndicator size="large" color={COLORS.primary} style={{ marginTop: 50 }} />
+      ) : (
+        <FlatList
+          data={menuItems}
+          keyExtractor={(item) => item._id}
+          contentContainerStyle={{ padding: 20 }}
+          renderItem={({ item }) => (
+            <View style={styles.foodCard}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.foodName}>{item.name}</Text>
+                <Text style={styles.foodPrice}>${item.price}</Text>
+                <Text style={styles.foodDesc}>{item.description}</Text>
+              </View>
+              <View style={styles.actionArea}>
+                <Image source={{ uri: item.image_url }} style={styles.foodImg} />
+                {getItemQty(item._id) === 0 ? (
+                  <TouchableOpacity style={styles.addBtn} onPress={() => handleAdd(item)}>
+                    <Plus size={18} color="white" />
+                  </TouchableOpacity>
+                ) : (
+                  <View style={styles.qtyRow}>
+                    <TouchableOpacity onPress={() => removeFromCart(item._id)}><Minus size={18} color={COLORS.primary}/></TouchableOpacity>
+                    <Text style={styles.qtyText}>{getItemQty(item._id)}</Text>
+                    <TouchableOpacity onPress={() => handleAdd(item)}><Plus size={18} color={COLORS.primary}/></TouchableOpacity>
+                  </View>
+                )}
+              </View>
             </View>
-            <View style={styles.actionArea}>
-              <Image source={{ uri: item.image }} style={styles.foodImg} />
-              {getItemQty(item.id) === 0 ? (
-                <TouchableOpacity style={styles.addBtn} onPress={() => handleAdd(item)}>
-                  <Plus size={18} color="white" />
-                </TouchableOpacity>
-              ) : (
-                <View style={styles.qtyRow}>
-                  <TouchableOpacity onPress={() => removeFromCart(item.id)}><Minus size={18} color={COLORS.primary}/></TouchableOpacity>
-                  <Text style={styles.qtyText}>{getItemQty(item.id)}</Text>
-                  <TouchableOpacity onPress={() => handleAdd(item)}><Plus size={18} color={COLORS.primary}/></TouchableOpacity>
-                </View>
-              )}
-            </View>
-          </View>
-        )}
-      />
+          )}
+        />
+      )}
 
       {cartItems.length > 0 && (
         <TouchableOpacity style={styles.cartBar} onPress={() => navigation.navigate('Cart')}>

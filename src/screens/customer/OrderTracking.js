@@ -1,13 +1,31 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, StatusBar, Dimensions } from 'react-native';
-import { COLORS, SIZES } from '../../constants/theme';
+import { COLORS } from '../../constants/theme';
 import { ChevronLeft, CheckCircle2, Circle, MapPin, Phone, MessageSquare } from 'lucide-react-native';
+import { orderService } from '../../api/orderService';
+import useAuthStore from '../../store/useAuthStore';
 
 const { height } = Dimensions.get('window');
 const STATUS_STEPS = ['pending', 'preparing', 'ready', 'delivered'];
 
 export default function OrderTracking({ route, navigation }) {
-  const { order } = route.params;
+  const { isAuthenticated } = useAuthStore();
+  const [order, setOrder] = useState(route.params.order);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const interval = setInterval(async () => {
+      try {
+        const updatedOrder = await orderService.getOrderById(order._id);
+        if (updatedOrder) setOrder(updatedOrder);
+      } catch (err) {
+        console.log("Polling stopped or failed");
+      }
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [isAuthenticated]);
 
   const Step = ({ title, desc, index }) => {
     const currentIndex = STATUS_STEPS.indexOf(order.status);
@@ -37,9 +55,9 @@ export default function OrderTracking({ route, navigation }) {
         <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
           <ChevronLeft color={COLORS.white} size={28} />
         </TouchableOpacity>
-        <Text style={styles.headerOrderText}>Order #{order.id.slice(-6)}</Text>
+        <Text style={styles.headerOrderText}>Order #{order._id.slice(-6).toUpperCase()}</Text>
         <View style={styles.totalBadge}>
-           <Text style={styles.totalText}>${order.total_amount}</Text>
+           <Text style={styles.totalText}>${order.totalAmount}</Text>
         </View>
       </View>
 
@@ -58,23 +76,19 @@ export default function OrderTracking({ route, navigation }) {
           </View>
 
           <View style={styles.addressCard}>
-            <View style={styles.iconBox}>
-               <MapPin color={COLORS.primary} size={22} />
-            </View>
+            <View style={styles.iconBox}><MapPin color={COLORS.primary} size={22} /></View>
             <View style={{ flex: 1, marginLeft: 15 }}>
                <Text style={styles.addressLabel}>Delivery Address</Text>
-               <Text style={styles.addressValue}>{order.delivery_address}</Text>
+               <Text style={styles.addressValue}>{order.deliveryAddress}</Text>
             </View>
           </View>
 
           <View style={styles.contactRow}>
             <TouchableOpacity style={styles.contactBtn}>
-               <Phone color={COLORS.primary} size={20} />
-               <Text style={styles.contactBtnText}>Call Kitchen</Text>
+               <Phone color={COLORS.primary} size={20} /><Text style={styles.contactBtnText}>Call Kitchen</Text>
             </TouchableOpacity>
             <TouchableOpacity style={[styles.contactBtn, { backgroundColor: COLORS.secondary }]}>
-               <MessageSquare color={COLORS.primary} size={20} />
-               <Text style={styles.contactBtnText}>Support</Text>
+               <MessageSquare color={COLORS.primary} size={20} /><Text style={styles.contactBtnText}>Support</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -102,7 +116,7 @@ const styles = StyleSheet.create({
   stepContent: { flex: 1, marginLeft: 20, paddingTop: 5 },
   stepTitle: { fontSize: 16, fontWeight: 'bold', color: COLORS.primary },
   stepDesc: { fontSize: 12, color: COLORS.gray, marginTop: 4 },
-  addressCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.surface, padding: 20, borderRadius: 30, elevation: 2, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 10 },
+  addressCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.surface, padding: 20, borderRadius: 30, elevation: 2 },
   iconBox: { width: 50, height: 50, borderRadius: 15, backgroundColor: COLORS.primary + '10', justifyContent: 'center', alignItems: 'center' },
   addressLabel: { fontSize: 12, fontWeight: 'bold', color: COLORS.gray, textTransform: 'uppercase' },
   addressValue: { fontSize: 14, color: COLORS.primary, marginTop: 4, lineHeight: 20 },
