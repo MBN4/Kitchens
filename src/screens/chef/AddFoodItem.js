@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, ScrollView, StatusBar, Alert, ActivityIndicator } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { COLORS } from '../../constants/theme';
-import { Camera, ChevronLeft, Tag, DollarSign, AlignLeft, Clock } from 'lucide-react-native';
+import { Camera, ChevronLeft, Tag, DollarSign, AlignLeft, Utensils } from 'lucide-react-native';
 import client from '../../api/client';
 import useAuthStore from '../../store/useAuthStore';
 
@@ -14,8 +14,7 @@ export default function AddFoodItem({ navigation }) {
     name: '',
     category: '',
     price: '',
-    description: '',
-    preparationTime: ''
+    description: ''
   });
 
   const pickImage = async () => {
@@ -31,11 +30,10 @@ export default function AddFoodItem({ navigation }) {
   };
 
   const handlePublish = async () => {
-    if (!formData.name || !formData.price || !formData.category || !formData.description || !formData.preparationTime || !image) {
-      Alert.alert("Missing Fields", "Please fill in all details and select an image");
+    if (!formData.name || !formData.price || !formData.category || !formData.description) {
+      Alert.alert("Error", "Please fill all fields");
       return;
     }
-
     setLoading(true);
     try {
       const data = new FormData();
@@ -44,28 +42,24 @@ export default function AddFoodItem({ navigation }) {
       data.append('category', formData.category);
       data.append('price', formData.price);
       data.append('description', formData.description);
-      data.append('preparationTime', formData.preparationTime);
       
-      const uriParts = image.split('.');
-      const fileType = uriParts[uriParts.length - 1];
-      
-      data.append('image', {
-        uri: image,
-        name: `photo.${fileType}`,
-        type: `image/${fileType}`,
-      });
+      if (image) {
+        const uriParts = image.split('.');
+        const fileType = uriParts[uriParts.length - 1];
+        data.append('image', {
+          uri: image,
+          name: `photo.${fileType}`,
+          type: `image/${fileType}`,
+        });
+      }
 
       await client.post('/api/chefs/food', data, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+        headers: { 'Content-Type': 'multipart/form-data' }
       });
 
-      Alert.alert("Success", "Dish added to your menu!", [
-        { text: "OK", onPress: () => navigation.goBack() }
-      ]);
+      Alert.alert("Success", "Dish published!", [{ text: "OK", onPress: () => navigation.goBack() }]);
     } catch (error) {
-      Alert.alert("Error", error.response?.data?.message || "Could not save dish");
+      Alert.alert("Error", "Failed to publish dish");
     } finally {
       setLoading(false);
     }
@@ -95,28 +89,23 @@ export default function AddFoodItem({ navigation }) {
 
           <View style={styles.inputGroup}>
             <View style={styles.inputBox}>
-               <Tag color={COLORS.primary} size={20} />
-              <TextInput style={styles.input} placeholder="Dish Name" placeholderTextColor={COLORS.gray} value={formData.name} onChangeText={(txt) => setFormData({...formData, name: txt})} />
+              <Utensils color={COLORS.primary} size={20} />
+              <TextInput style={styles.input} placeholder="Dish Name" value={formData.name} onChangeText={(v) => setFormData({...formData, name: v})} />
             </View>
 
             <View style={styles.inputBox}>
-               <Tag color={COLORS.primary} size={20} />
-              <TextInput style={styles.input} placeholder="Category" placeholderTextColor={COLORS.gray} value={formData.category} onChangeText={(txt) => setFormData({...formData, category: txt})} />
-            </View>
-
-            <View style={styles.inputBox}>
-              <Clock color={COLORS.primary} size={20} />
-              <TextInput style={styles.input} placeholder="Prep Time (e.g. 20-30 mins)" placeholderTextColor={COLORS.gray} value={formData.preparationTime} onChangeText={(txt) => setFormData({...formData, preparationTime: txt})} />
+              <Tag color={COLORS.primary} size={20} />
+              <TextInput style={styles.input} placeholder="Category" value={formData.category} onChangeText={(v) => setFormData({...formData, category: v})} />
             </View>
 
             <View style={styles.inputBox}>
               <DollarSign color={COLORS.primary} size={20} />
-              <TextInput style={styles.input} placeholder="Price" keyboardType="numeric" placeholderTextColor={COLORS.gray} value={formData.price} onChangeText={(txt) => setFormData({...formData, price: txt})} />
+              <TextInput style={styles.input} placeholder="Price" keyboardType="numeric" value={formData.price} onChangeText={(v) => setFormData({...formData, price: v})} />
             </View>
 
             <View style={[styles.inputBox, { height: 120, alignItems: 'flex-start', paddingTop: 15 }]}>
               <AlignLeft color={COLORS.primary} size={20} />
-              <TextInput style={[styles.input, { textAlignVertical: 'top' }]} placeholder="Description" multiline placeholderTextColor={COLORS.gray} value={formData.description} onChangeText={(txt) => setFormData({...formData, description: txt})} />
+              <TextInput style={[styles.input, { textAlignVertical: 'top' }]} placeholder="Description" multiline value={formData.description} onChangeText={(v) => setFormData({...formData, description: v})} />
             </View>
           </View>
 
@@ -131,19 +120,19 @@ export default function AddFoodItem({ navigation }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.primary },
-  darkHeader: { height: '22%', justifyContent: 'center', paddingHorizontal: 30, paddingTop: 30 },
-  backBtn: { marginBottom: 10 },
+  darkHeader: { height: '18%', justifyContent: 'center', paddingHorizontal: 30, paddingTop: 30 },
+  backBtn: { marginBottom: 5 },
   headerTitle: { fontSize: 28, fontWeight: 'bold', color: COLORS.white },
   headerSubtitle: { fontSize: 14, color: COLORS.white, opacity: 0.7 },
   whiteSheet: { flex: 1, backgroundColor: COLORS.background, borderTopLeftRadius: 50, borderTopRightRadius: 50, paddingHorizontal: 25, paddingTop: 30 },
-  imageUpload: { height: 200, backgroundColor: COLORS.surface, borderRadius: 35, marginBottom: 25, overflow: 'hidden', borderStyle: 'dashed', borderWidth: 2, borderColor: '#ddd' },
+  imageUpload: { height: 180, backgroundColor: COLORS.surface, borderRadius: 30, marginBottom: 25, overflow: 'hidden', borderStyle: 'dashed', borderWidth: 1, borderColor: '#ddd' },
   uploadPlaceholder: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  cameraCircle: { width: 60, height: 60, borderRadius: 30, backgroundColor: COLORS.secondary + '20', justifyContent: 'center', alignItems: 'center', marginBottom: 10 },
-  uploadText: { fontWeight: 'bold', color: COLORS.primary },
+  cameraCircle: { width: 50, height: 50, borderRadius: 25, backgroundColor: COLORS.secondary + '20', justifyContent: 'center', alignItems: 'center', marginBottom: 10 },
+  uploadText: { fontWeight: 'bold', color: COLORS.primary, fontSize: 13 },
   previewImage: { width: '100%', height: '100%' },
   inputGroup: { marginBottom: 20 },
-  inputBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.surface, borderRadius: 25, paddingHorizontal: 20, height: 60, marginBottom: 15, elevation: 1 },
+  inputBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.white, borderRadius: 20, paddingHorizontal: 20, height: 60, marginBottom: 12, elevation: 1 },
   input: { flex: 1, marginLeft: 15, color: COLORS.primary, fontWeight: '500' },
-  submitBtn: { backgroundColor: COLORS.secondary, height: 65, borderRadius: 35, justifyContent: 'center', alignItems: 'center', marginBottom: 40, elevation: 4 },
+  submitBtn: { backgroundColor: COLORS.secondary, height: 65, borderRadius: 30, justifyContent: 'center', alignItems: 'center', marginBottom: 40, elevation: 4 },
   submitBtnText: { color: COLORS.primary, fontWeight: 'bold', fontSize: 18 }
 });

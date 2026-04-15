@@ -38,25 +38,46 @@ export default function SignupScreen({ navigation }) {
       Alert.alert("Permission Denied", "Location access is required.");
       return;
     }
-    let location = await Location.getCurrentPositionAsync({});
-    setRegion({
-      latitude: location.coords.latitude,
-      longitude: location.coords.longitude,
-      latitudeDelta: 0.005,
-      longitudeDelta: 0.005,
-    });
+
+    setLoading(true);
+    try {
+      let location = await Location.getCurrentPositionAsync({});
+      const { latitude, longitude } = location.coords;
+
+      const newRegion = {
+        latitude,
+        longitude,
+        latitudeDelta: 0.005,
+        longitudeDelta: 0.005,
+      };
+      setRegion(newRegion);
+
+      let response = await Location.reverseGeocodeAsync({ latitude, longitude });
+      if (response.length > 0) {
+        const item = response[0];
+        const addressString = `${item.name || ''} ${item.street || ''}, ${item.district || item.subregion || ''}, ${item.city || ''}`;
+        setFormData(prev => ({ ...prev, address: addressString.trim() }));
+      }
+    } catch (error) {
+      Alert.alert("Error", "Could not fetch address. Please type it manually.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSignup = async () => {
     Keyboard.dismiss();
     if (!formData.name || !formData.email || !formData.phone || !formData.password || !formData.address) {
-      Alert.alert("Error", "Please fill in all fields and provide an address");
+      Alert.alert("Error", "Please fill in all fields");
       return;
     }
     setLoading(true);
     try {
       const payload = {
-        ...formData,
+        name: formData.name,
+        email: formData.email.trim(),
+        phone: formData.phone.trim(),
+        password: formData.password,
         role: role,
         location: {
           latitude: region.latitude,
@@ -67,7 +88,8 @@ export default function SignupScreen({ navigation }) {
       await authService.signup(payload);
       Alert.alert("Success", "Account created successfully!", [{ text: "Login", onPress: () => navigation.navigate('Login') }]);
     } catch (error) {
-      Alert.alert("Signup Failed", error.response?.data?.message || "Registration error");
+      const errorMsg = error.response?.data?.message || "Registration failed";
+      Alert.alert("Signup Failed", errorMsg);
     } finally {
       setLoading(false);
     }
@@ -84,69 +106,36 @@ export default function SignupScreen({ navigation }) {
           <Text style={styles.headerTitle}>Join Us</Text>
         </View>
 
-        <KeyboardAvoidingView 
-          behavior={Platform.OS === 'ios' ? 'padding' : null} 
-          style={{ flex: 1 }}
-        >
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : null} style={{ flex: 1 }}>
           <View style={styles.whiteSheet}>
-            <ScrollView 
-              showsVerticalScrollIndicator={false} 
-              contentContainerStyle={{ paddingBottom: 60 }}
-              keyboardShouldPersistTaps="handled"
-            >
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 60 }} keyboardShouldPersistTaps="handled">
               <View style={styles.roleContainer}>
-                <TouchableOpacity 
-                  style={[styles.roleBtn, role === 'customer' && styles.activeRole]} 
-                  onPress={() => setRole('customer')}
-                >
+                <TouchableOpacity style={[styles.roleBtn, role === 'customer' && styles.activeRole]} onPress={() => setRole('customer')}>
                   <Text style={[styles.roleText, role === 'customer' && styles.activeRoleText]}>Customer</Text>
                 </TouchableOpacity>
-                <TouchableOpacity 
-                  style={[styles.roleBtn, role === 'chef' && styles.activeRole]} 
-                  onPress={() => setRole('chef')}
-                >
+                <TouchableOpacity style={[styles.roleBtn, role === 'chef' && styles.activeRole]} onPress={() => setRole('chef')}>
                   <Text style={[styles.roleText, role === 'chef' && styles.activeRoleText]}>Home Chef</Text>
                 </TouchableOpacity>
               </View>
 
               <View style={styles.inputBox}>
                 <User color={COLORS.primary} size={20} />
-                <TextInput 
-                  style={styles.input} 
-                  placeholder="Full Name" 
-                  onChangeText={(val) => setFormData({...formData, name: val})}
-                />
+                <TextInput style={styles.input} placeholder="Full Name" value={formData.name} onChangeText={(val) => setFormData({...formData, name: val})} />
               </View>
 
               <View style={styles.inputBox}>
                 <Mail color={COLORS.primary} size={20} />
-                <TextInput 
-                  style={styles.input} 
-                  placeholder="Email Address" 
-                  autoCapitalize="none"
-                  onChangeText={(val) => setFormData({...formData, email: val})}
-                />
+                <TextInput style={styles.input} placeholder="Email Address" autoCapitalize="none" keyboardType="email-address" value={formData.email} onChangeText={(val) => setFormData({...formData, email: val})} />
               </View>
 
               <View style={styles.inputBox}>
                 <Phone color={COLORS.primary} size={20} />
-                <TextInput 
-                  style={styles.input} 
-                  placeholder="Phone (11 Digits)" 
-                  keyboardType="phone-pad"
-                  maxLength={11}
-                  onChangeText={(val) => setFormData({...formData, phone: val})}
-                />
+                <TextInput style={styles.input} placeholder="Phone (11 Digits)" keyboardType="phone-pad" maxLength={11} value={formData.phone} onChangeText={(val) => setFormData({...formData, phone: val})} />
               </View>
 
               <View style={styles.inputBox}>
                 <Lock color={COLORS.primary} size={20} />
-                <TextInput 
-                  style={styles.input} 
-                  placeholder="Password" 
-                  secureTextEntry={!showPassword} 
-                  onChangeText={(val) => setFormData({...formData, password: val})}
-                />
+                <TextInput style={styles.input} placeholder="Password" secureTextEntry={!showPassword} value={formData.password} onChangeText={(val) => setFormData({...formData, password: val})} />
                 <TouchableOpacity onPress={animateToggle}>
                   <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
                     {showPassword ? <EyeOff color={COLORS.primary} size={20} /> : <Eye color={COLORS.primary} size={20} />}
@@ -159,7 +148,8 @@ export default function SignupScreen({ navigation }) {
                 <TextInput 
                   style={styles.input} 
                   placeholder="Street / Area Name" 
-                  onChangeText={(val) => setFormData({...formData, address: val})}
+                  value={formData.address}
+                  onChangeText={(val) => setFormData({...formData, address: val})} 
                 />
               </View>
 
@@ -171,11 +161,7 @@ export default function SignupScreen({ navigation }) {
               </View>
 
               <View style={styles.mapContainer}>
-                <MapView 
-                  style={styles.map} 
-                  region={region} 
-                  onRegionChangeComplete={setRegion}
-                >
+                <MapView style={styles.map} region={region} onRegionChangeComplete={setRegion}>
                   <Marker coordinate={region} pinColor={COLORS.primary} />
                 </MapView>
               </View>

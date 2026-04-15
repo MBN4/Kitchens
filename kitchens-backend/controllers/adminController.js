@@ -28,9 +28,9 @@ exports.getSystemStats = async (req, res) => {
   try {
     const activeChefs = await Chef.countDocuments({ status: 'active' });
     const totalUsers = await User.countDocuments({ role: 'customer' });
-    const orders = await Order.find({ status: 'delivered' });
+    const deliveredOrders = await Order.find({ status: 'delivered' });
     
-    const totalRevenue = orders.reduce((sum, order) => sum + order.totalAmount, 0);
+    const totalRevenue = deliveredOrders.reduce((sum, order) => sum + order.totalAmount, 0);
     const totalOrders = await Order.countDocuments();
 
     res.json({
@@ -39,6 +39,19 @@ exports.getSystemStats = async (req, res) => {
       totalRevenue: totalRevenue.toFixed(2),
       totalOrders
     });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+exports.getAllOrders = async (req, res) => {
+  try {
+    const orders = await Order.find()
+      .populate('customer', 'name')
+      .populate('chef', 'kitchenName')
+      .sort({ createdAt: -1 })
+      .limit(10);
+    res.json(orders);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

@@ -6,5 +6,6 @@ const auth = require('../middleware/auth');
 router.get('/pending-chefs', auth, adminController.getPendingChefs);
 router.patch('/verify-chef/:id', auth, adminController.verifyChef);
 router.get('/stats', auth, adminController.getSystemStats);
+router.get('/recent-orders', auth, adminController.getAllOrders);
 
 module.exports = router;

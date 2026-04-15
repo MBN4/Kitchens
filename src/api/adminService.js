@@ -12,5 +12,9 @@ export const adminService = {
   getSystemStats: async () => {
     const response = await client.get('/api/admin/stats');
     return response.data;
+  },
+  getRecentOrders: async () => {
+    const response = await client.get('/api/admin/recent-orders');
+    return response.data;
   }
 };

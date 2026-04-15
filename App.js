@@ -44,7 +44,7 @@ export default function App() {
         }
       };
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, user]);
 
   return (
     <SafeAreaProvider>

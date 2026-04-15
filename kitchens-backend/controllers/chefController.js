@@ -10,6 +10,16 @@ exports.getVerifiedChefs = async (req, res) => {
   }
 };
 
+exports.getChefProfileByUserId = async (req, res) => {
+  try {
+    const chef = await Chef.findOne({ user: req.params.userId });
+    if (!chef) return res.status(404).json({ message: "Chef profile not found" });
+    res.json(chef);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 exports.addFoodItem = async (req, res) => {
   try {
     const newItem = new FoodItem(req.body);
